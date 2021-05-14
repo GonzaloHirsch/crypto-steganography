@@ -1,0 +1,2 @@
+msgpack-python==0.5.6
+pyfinite==1.7
