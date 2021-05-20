@@ -1,5 +1,20 @@
 
 """
+Calculates a power using the galois field multiplication
+Receives:
+    - num --> Number to be used as power
+    - n --> Power to be used
+    - field --> Galois field instance
+Returns:
+    - res --> Power calculated
+"""
+def field_pow(num, n, field):
+    res = num
+    for _ in range(1, n):
+        res = field.Multiply(res, num)
+    return res
+
+"""
 Calculates a step of the interpolation
 Receives:
     - x --> Pixel X from block j for each image
@@ -7,10 +22,12 @@ Receives:
     - r --> Step of the interpolation
     - k --> Amount of secrets
     - field --> Galois field instance
+Returns:
+    - res --> Secret for that step
 """
 def calculate_step(x, y_prime, r, k, field):
     # Multiplier
-    mult = (-1)**(k - (r + 1))
+    mult = field_pow(-1, k - (r + 1), field)
     # Result
     res = 0
     # Iteration for summation
