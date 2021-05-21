@@ -17,7 +17,7 @@ def main():
     config = parse_cli()
     bitArray = getImg(config.secret_image)
     print(bitArray)
-    writeNewImage(config.secret_image, bitArray, config.directory)
+    writeNewImage(config.secret_image, bitArray, config.directory, 'eggs.bmp')
 
 # Program entrypoint
 if __name__ == "__main__":

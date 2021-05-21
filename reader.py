@@ -32,7 +32,7 @@ def getImg(filepath):
         num=0
     return bits
 
-def writeNewImage(filepath, newpicture, directory):
+def writeNewImage(filepath, newpicture, directory, fileName):
     bitmap = open(filepath, 'rb')
     raw = bytearray(bitmap.read())
     newBytes = []
@@ -44,7 +44,7 @@ def writeNewImage(filepath, newpicture, directory):
     #From the beginning to the number of bytes required for the image data
     to_img_data=unpack("<i",bitmap.read(4))[0]
     bitmap.seek(bitmap.tell()+4)
-    with open(directory + 'eggs.bmp', 'wb') as d:
+    with open(directory + fileName, 'wb') as d:
         d.write(raw)
         d.seek(to_img_data)
         for byte in newBytes:
