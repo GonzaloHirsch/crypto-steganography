@@ -3,6 +3,7 @@ import sys
 # Local imports
 from config import Config
 from reader import *
+from bmpStructure import BMPStructure
 
 # Parses CLI options
 def parse_cli():
@@ -15,8 +16,11 @@ def parse_cli():
 def main():
     # Parse program arguments and get config object
     config = parse_cli()
-    bitArray = getImg(config.secret_image)
-    print(bitArray)
+
+    # Parsing the BMP image
+    bmpStructure = BMPStructure(config.secret_image)
+    bitArray = bmpStructure.getPixelArray()
+    print(bmpStructure)
     writeNewImage(config.secret_image, bitArray, config.directory, 'eggs.bmp')
 
 # Program entrypoint
