@@ -1,4 +1,4 @@
-BLOCK_SIZE=4
+BLOCK_SIDE=2
 
 # Types
 INT_BYTES=4

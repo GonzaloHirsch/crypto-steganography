@@ -94,10 +94,10 @@ class BMPStructure:
         blockArray = []
 
         # Image must have width and height divisible by 4 
-        if (self.imageHeight % constants.BLOCK_SIZE != 0):
+        if (self.imageHeight % constants.BLOCK_SIDE != 0):
             print('Image height not divisible by block size')
             return
-        if (self.imageWidth % constants.BLOCK_SIZE != 0):
+        if (self.imageWidth % constants.BLOCK_SIDE != 0):
             print('Image width not divisible by block size')
             return
 
