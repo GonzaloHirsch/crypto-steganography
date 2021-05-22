@@ -13,6 +13,7 @@ class BMPStructure:
         self.offset = 0
         self.bitsPerPixel = 0
         self.pixelsArray = []
+        self.blockPixelsArray = []
         
         self.__parseFileHeader()
         self.__parseDIBHeader()
@@ -88,6 +89,41 @@ class BMPStructure:
             for byte in newBytes:
                 d.write(byte)
         bitmap.close()
+
+    def mapPixelArrayIntoBlocks(self): 
+        blockArray = []
+
+        # Image must have width and height divisible by 4 
+        if (self.imageHeight % constants.BLOCK_SIZE != 0):
+            print('Image height not divisible by block size')
+            return
+        if (self.imageWidth % constants.BLOCK_SIZE != 0):
+            print('Image width not divisible by block size')
+            return
+
+        # Creating each block from top left to bottom right
+        print( int(self.imageWidth/2))
+        for blockHeightIdx in range(0, int(self.imageHeight/2)):
+            for blockWidthIdx in range(0, int(self.imageWidth/2)):
+                blockArray.append(self.__getPixelBlock(blockHeightIdx, blockWidthIdx))
+
+        self.blockPixelsArray = blockArray
+
+        return blockArray
+    
+    def __getPixelBlock(self, blockHeightIdx, blockWidthIdx):
+        # Calculate current index
+        blockWidthOffset = blockWidthIdx * 2
+        blockHeightOffset = blockHeightIdx * self.imageWidth * 2
+        index = blockHeightOffset + blockWidthOffset 
+                
+        block = []
+        block.append(self.pixelsArray[index])                       # X
+        block.append(self.pixelsArray[index + 1])                   # W
+        block.append(self.pixelsArray[index + self.imageWidth])     # V
+        block.append(self.pixelsArray[index + self.imageWidth + 1]) # U
+
+        return block
 
     def __str__(self):
         subs = '[file=%s] [width=%i] [height=%i] [offset=%i] [bitsPerPixel=%i]' % (self.filepath, self.imageWidth, self.imageHeight, self.offset, self.bitsPerPixel)

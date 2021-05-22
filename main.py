@@ -19,6 +19,7 @@ def main():
     # Parsing the BMP image
     bmpStructure = BMPStructure(config.secret_image)
     print(bmpStructure)
+    # print(bmpStructure.mapPixelArrayIntoBlocks())
     bmpStructure.writeNewImage(config.directory, 'eggs.bmp')
 
 # Program entrypoint
