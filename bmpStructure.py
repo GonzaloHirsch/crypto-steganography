@@ -74,6 +74,21 @@ class BMPStructure:
     def __unpackShort(self):
         return unpack("<h", self.bitmap.read(constants.SHORT_BYTES))[0]
 
+    def writeNewImage(self, directory, filename):
+        bitmap = open(self.filepath, 'rb')
+        raw = bytearray(bitmap.read())
+        newBytes = []
+        for byte in self.pixelsArray:
+            newByte = pack("B", byte)
+            newBytes.append(newByte)
+
+        with open(directory + filename, 'wb') as d:
+            d.write(raw)
+            d.seek(self.offset)
+            for byte in newBytes:
+                d.write(byte)
+        bitmap.close()
+
     def __str__(self):
         subs = '[file=%s] [width=%i] [height=%i] [offset=%i] [bitsPerPixel=%i]' % (self.filepath, self.imageWidth, self.imageHeight, self.offset, self.bitsPerPixel)
         s = '%s{%s}' % (type(self).__name__, subs)

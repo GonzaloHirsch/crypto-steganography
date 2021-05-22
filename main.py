@@ -2,7 +2,6 @@
 import sys
 # Local imports
 from config import Config
-from reader import *
 from bmpStructure import BMPStructure
 
 # Parses CLI options
@@ -19,9 +18,8 @@ def main():
 
     # Parsing the BMP image
     bmpStructure = BMPStructure(config.secret_image)
-    bitArray = bmpStructure.getPixelArray()
     print(bmpStructure)
-    writeNewImage(config.secret_image, bitArray, config.directory, 'eggs.bmp')
+    bmpStructure.writeNewImage(config.directory, 'eggs.bmp')
 
 # Program entrypoint
 if __name__ == "__main__":
