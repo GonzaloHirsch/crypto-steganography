@@ -1,5 +1,4 @@
 # Lib imports
-from struct import unpack, pack
 
 import constants
 

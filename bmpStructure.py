@@ -16,7 +16,14 @@ class BMPStructure:
         
         self.__parseFileHeader()
         self.__parseDIBHeader()
-        self.__parsePixelMap()
+
+        if (self.__correctFormat()):
+            self.__parsePixelMap()
+        else:
+            print('Image does not satisfy required conditions')
+
+    def __correctFormat(self):
+        return self.bitsPerPixel == 8
 
     def __parseFileHeader(self):
         # The offset, i.e. starting address, of the byte where the bitmap image data (pixel array) can be found.
@@ -39,10 +46,6 @@ class BMPStructure:
         num = 0
         bits = []
 
-        # Will only be working with grey scale
-        if (self.bitsPerPixel > 8): 
-            return []
-
         # Reading columns
         for _ in range(0, self.imageHeight):
             # Reading row
@@ -61,7 +64,7 @@ class BMPStructure:
                 num += 1
                 self.bitmap.read(constants.BYTE)
 
-            num=0
+            num = 0
 
         self.pixelsArray = bits
 

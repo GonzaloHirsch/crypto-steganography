@@ -5,6 +5,7 @@ from transformer import Transformer
 from config import Config
 from bmpStructure import BMPStructure
 from transformer import Transformer
+from shamirAlgorithm import ShamirAlgorithm
 
 # Parses CLI options
 def parse_cli():
@@ -34,6 +35,8 @@ def main():
         bmpStructure.getHeight(), 
         bmpStructure.getWidth()
     )
+
+    shamir = ShamirAlgorithm(blockArray)
 
     pixels = Transformer.mapBlocksIntoPixelArray(
         blockArray,
