@@ -1,33 +1,42 @@
-# Lib imports
-import random
-
 import constants
 from helpers import getParity, setBit, clearBit, getBitsRepresentation
+from interpolation import field_pow
 
 class ShamirAlgorithm:
     
-    def __init__(self, secret, k, n, shadows):
-        if (k > n or len(shadows) != n):
-            print("Incorrect parameters. The following must be satisfied:\n  - n = k\n  - len(shadow) = n")
-            exit(1)
+    def __init__(self, action, field, shadows, k, n=None, secret=None):
 
-        self.k = k
-        self.n = n
+        self.action = action
+        self.field = field
         self.shadows = shadows
-        self.polinomialMod = 355
+        self.k = int(k)
         self.coeficients = []
-        self.polinomialPairs = []
         self.polinomialCount = 0
-        self.secret = self.__splitSecret(secret)
+
+        if (action == constants.ENCODE):
+            # Divide the secret into blocks of k bytes
+            self.secret = self.__splitSecret(secret)
+            self.n = n
+            # How many polinomials there are
+            # Equivalent to how many blocks we will use of each shadow
+            self.polinomialCount = len(self.secret)
+            print(self.polinomialCount)
+
+            # Extra validation
+            if (self.k > self.n or len(shadows) != n):
+                print("Incorrect parameters. The following must be satisfied:\n  - n = k\n  - len(shadow) = n")
+                exit(1)
+            # In case the secret is longer than the amount of blocks in the shadows
+            if (len(self.shadows[0]) < self.polinomialCount):
+                print("Secret is too long. Shadows contain {} blocks but secret has {} blocks.".format(len(self.shadows[0]), self.polinomialCount))
+                exit(1)
 
     def encode(self):
         self.__createPolinomials()
-        print(self.__str__())
-        print("Shadows = ", self.shadows)
-        self.encodeShadows()
-        print("Encoded Shadows = ", self.shadows)
+        self.__encodeShadows()
     
-    def encodeShadows(self):
+    def __encodeShadows(self):
+        print(len(self.shadows), len(self.shadows[1]))
         for shadowIdx in range (0, self.n):
             print('\n####### Shadow %i #######' % (shadowIdx))
 
@@ -45,20 +54,14 @@ class ShamirAlgorithm:
                 # Update the images array corresponding block
                 self.shadows[shadowIdx][blockIdx] = shadowBlock
                
-    
+
+    # Secret is an array of bytes
     def __splitSecret(self, secret):
-        utf8Secret = secret.encode()
-        
         # Divide the secret into blocks of k bytes (each char = 1 byte)
-        secretBlocks = [utf8Secret[i:i+self.k] for i in range(0, len(utf8Secret), self.k)]
-        print(secretBlocks)
+        secretBlocks = [secret[i:i+self.k] for i in range(0, len(secret), self.k)]
 
         if (len(secretBlocks[-1]) != self.k):
             print("[Warning] Secret is not divisible by k = ", self.k)
-
-        # How many polinomials there are
-        # Equivalent to how many blocks we will use of each shadow
-        self.polinomialCount = len(secretBlocks)
 
         return secretBlocks
 
@@ -76,12 +79,15 @@ class ShamirAlgorithm:
 
 
     # Evaluate the polinomial F_i(X_i)
+    # Hacer dentro de Galois
     def __evaluatePolinomial(self, index, value):
         result = 0
         for i in range (0, self.k):
-            result += self.coeficients[index][i] * (value**i)
+            power = field_pow(value, i, self.field)
+            mult = self.field.Multiply(self.coeficients[index][i], power)
+            result =  self.field.Add(result, mult)
 
-        return result % self.polinomialMod
+        return result
 
     def __encodePixelBlock(self, secretByte, block): 
         W = block[1]
@@ -117,6 +123,6 @@ class ShamirAlgorithm:
         return clearBit(byte, position) if value == '0' else setBit(byte, position)
 
     def __str__(self):
-        subs = '[schema=(%i,%i)] [secret=%s] [coeficients=%s] [mod=%i]' % (self.k, self.n, self.secret, self.coeficients, self.polinomialMod)
+        subs = '[schema=(%i,%i)] [secret=%s] [generator=%i]' % (self.k, self.n, self.secret, self.field.generator)
         s = '%s{%s}' % (type(self).__name__, subs)
         return s

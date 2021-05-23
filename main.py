@@ -2,12 +2,14 @@
 import sys
 from transformer import Transformer
 import os, os.path
+from pyfinite import ffield
+
 # Local imports
 from config import Config
 from bmpStructure import BMPStructure
 from transformer import Transformer
 from shamirAlgorithm import ShamirAlgorithm
-
+from constants import DECODE, ENCODE
 
 # Parses CLI options
 def parse_cli(validate = False):
@@ -18,8 +20,8 @@ def parse_cli(validate = False):
     directory = sys.argv[4]
     # Validations
     if validate:
-        if action != 'd' and action != 'r':
-            print('Opción inválida \'{}\' para la acción, debe ser \'r\' o \'d\''.format(action))
+        if action != ENCODE and action != DECODE:
+            print('Opción inválida \'{}\' para la acción, debe ser \'{}\' o \'{}\''.format(action, ENCODE, DECODE))
             exit(1)
         if k < 4 or k > 6:
             print('Opción inválida \'{}\' para K, debe ser 4 <= k <= 6'.format(k))
@@ -30,7 +32,7 @@ def parse_cli(validate = False):
             exit(1)
     return Config(action, secret_image, k, directory)
 
-def encode(config):
+def encode(config, galoisField):
     # Parsing the BMP image
     bmpStructure = BMPStructure(config.secret_image)
     print(bmpStructure)
@@ -40,8 +42,10 @@ def encode(config):
         bmpStructure.getHeight(), 
         bmpStructure.getWidth()
     )
+    # TODO
+    randomShadows = [[[0, 1, 4, 5], [2, 3, 6, 7]],[[8,9,12,13],[10,11,14,15]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]]]
 
-    shamir = ShamirAlgorithm("AcD227", 3, 5, [[[0, 1, 4, 5], [2, 3, 6, 7]],[[8,9,12,13],[10,11,14,15]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]]])
+    shamir = ShamirAlgorithm(ENCODE, galoisField, randomShadows, config.k, len(randomShadows), bmpStructure.getPixelArray())
     shamir.encode()
 
     pixels = Transformer.mapBlocksIntoPixelArray(
@@ -55,17 +59,19 @@ def encode(config):
 
     bmpStructure.writeNewImage(pixels, config.directory, 'eggs.bmp')
 
-def decode(config):
+def decode(config, galoisField):
     return
 
 def main():
     # Parse program arguments and get config object
     config = parse_cli()
 
+    F = ffield.FField(8, gen=355, useLUT=0)
+
     if config.action == 'd':
-        encode(config)
+        encode(config, F)
     else:
-        decode(config)
+        decode(config, F)
 
 # Program entrypoint
 if __name__ == "__main__":
