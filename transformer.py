@@ -7,6 +7,8 @@ class Transformer:
     def mapPixelArrayIntoBlocks(pixelsArray, imageHeight, imageWidth): 
         blockArray = []
 
+        newPixelsArray = Transformer.__convertPixelArray(pixelsArray, imageHeight, imageWidth)
+
         # Image must have width and height divisible by 4 
         if (imageHeight % constants.BLOCK_SIDE != 0):
             print('Image height not divisible by block size')
@@ -18,9 +20,22 @@ class Transformer:
         # Creating each block from top left to bottom right
         for blockHeightIdx in range(0, int(imageHeight/2)):
             for blockWidthIdx in range(0, int(imageWidth/2)):
-                blockArray.append(Transformer.__getPixelBlock(pixelsArray, blockHeightIdx, blockWidthIdx, imageWidth))
+                blockArray.append(Transformer.__getPixelBlock(newPixelsArray, blockHeightIdx, blockWidthIdx, imageWidth))
 
         return blockArray
+
+    def __convertPixelArray(pixelsArray, imageHeight, imageWidth):
+        newPixelArray = []
+        # Will move from the top rows to the bottom ones 
+        for i in range(1, imageHeight + 1):
+            # Gives me the first index of the row
+            index = (imageHeight - i) * imageWidth
+            # Will add all the elements of that row
+            for j in range(0, imageWidth):
+                newPixelArray.append(pixelsArray[index + j])
+
+        return newPixelArray
+
 
     def __getPixelBlock(pixelsArray, blockHeightIdx, blockWidthIdx, imageWidth):
         # Calculate current index
@@ -53,4 +68,4 @@ class Transformer:
                 pixelsArray.append(blockPixelsArray[blockIdx][2])
                 pixelsArray.append(blockPixelsArray[blockIdx][3])
 
-        return pixelsArray
+        return Transformer.__convertPixelArray(pixelsArray, imageHeight, imageWidth)
