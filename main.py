@@ -32,11 +32,8 @@ def parse_cli(validate = False):
             exit(1)
     return Config(action, secret_image, k, files_in_directory, directory)
 
-def encode(config, galoisField):
-    # Parsing the BMP image
-    bmpStructure = BMPStructure(config.secret_image)
-    print(bmpStructure)
-
+# Extracts all images from a given directory
+def get_images_from_directory(config):
     portadoras = []
 
     for name in os.listdir(config.directory):
@@ -49,11 +46,20 @@ def encode(config, galoisField):
                 portadoraStructure.getWidth()
             ))
 
+    return portadoras
+
+def encode(config, galoisField):
+    # Parsing the BMP image
+    bmpStructure = BMPStructure(config.secret_image)
+    print(bmpStructure)
+
+    portadoras = get_images_from_directory(config)
+
     shamir = ShamirAlgorithm(ENCODE, galoisField, portadoras, config.k, config.n, bmpStructure.getPixelArray())
     shamir.encode()
 
     for idx, name in enumerate(os.listdir(config.directory)):
-        filepath = config.directory + "/" + name
+        filepath = os.path.join(config.directory, name)
         if os.path.isfile(filepath) :
             shadows = shamir.shadows
             shadow = Transformer.mapBlocksIntoPixelArray(
@@ -61,10 +67,30 @@ def encode(config, galoisField):
                 bmpStructure.getHeight(), 
                 bmpStructure.getWidth()
             )
-            bmpStructure.writeNewImage(shadow, config.directory, "/" + name)
+            bmpStructure.writeNewImage(shadow, os.path.join(config.directory, name))
 
 def decode(config, galoisField):
-    return
+    # Extract shadowed images
+    portadoras = get_images_from_directory(config)
+    
+    # Decode using the Shamir Algorithm
+    shamir = ShamirAlgorithm(DECODE, galoisField, portadoras, config.k)
+    shamir.decode()
+
+    # Find an image to use
+    resultStructure = None
+    for name in os.listdir(config.directory):
+        filepath = os.path.join(config.directory, name)
+        if os.path.isfile(filepath):
+            resultStructure = BMPStructure(filepath)
+            break
+    if resultStructure == None:
+        print("No hay imagenes para reusar encabezados en el directorio \'{}\'".format(config.directory))
+        exit(1)
+    
+    # Write result into the secret image
+    resultStructure.writeNewImage(shamir.secret, config.secret_image)
+
 
 def main():
     # Parse program arguments and get config object

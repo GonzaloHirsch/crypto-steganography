@@ -1,6 +1,6 @@
 import constants
 from helpers import getParity, setBit, clearBit, getBitsRepresentation
-from interpolation import field_pow
+from interpolation import field_pow, interpolate
 
 class ShamirAlgorithm:
     
@@ -35,6 +35,9 @@ class ShamirAlgorithm:
     def encode(self):
         self.__createPolinomials()
         self.__encodeShadows()
+
+    def decode(self):
+        self.__verifyAndExtract()
     
     def __encodeShadows(self):
         print(len(self.shadows), len(self.shadows[1]))
@@ -122,7 +125,63 @@ class ShamirAlgorithm:
 
         return block
 
-    
+    def __verifyAndExtract(self):
+        # This array will hold the J block for all shadows
+        # [[1_block_img_1, 1_block_img_2, ...], [2_block_img_1, 2_block_img_2, ...]]
+        j_blocks = []
+
+        # Extract the J block for each shadow
+        # J is the number of blocks per shadow
+        for j in range(len(self.shadows[0])):
+            j_blocks.append([shadow[j] for shadow in self.shadows])
+
+        # Verify all blocks and prepare X and Y
+        verified_j_blocks = []
+        for j_block in j_blocks:
+            xs, ys = [], []
+            # Verify each block
+            for block in j_block:
+                # If verified add the X and Y to the arrays
+                valid, x, y = self.__verifyBlock(block)
+                if valid:
+                    xs.append(x)
+                    ys.append(y)
+            if len(xs) > 0:
+                verified_j_blocks.append([xs, ys])
+
+        # Obtain all secrets and join them
+        secrets = [interpolate(v_block[0], v_block[1], self.field) for v_block in verified_j_blocks]
+        joined_secrets = [s for secret in secrets for s in secret]
+        self.secret = joined_secrets
+
+    def __verifyBlock(self, block):
+        # Getting bit representation for each one
+        x, w, v, u = [getBitsRepresentation(b) for b in block]
+        t = 0
+        # Setting T bits
+        t = self.__setbit(t, w[0], 2)
+        t = self.__setbit(t, w[1], 1)
+        t = self.__setbit(t, w[2], 0)
+        t = self.__setbit(t, v[0], 5)
+        t = self.__setbit(t, v[1], 4)
+        t = self.__setbit(t, v[2], 3)
+        t = self.__setbit(t, u[0], 7)
+        t = self.__setbit(t, u[1], 6)
+
+        # Making the verification
+        if int(u[2]) == self.__completeNumberXor(t):
+            return True, block[0], t
+        return False, None, None
+
+    def __completeNumberXor(self, number):
+        # Get representation in bits
+        bits = getBitsRepresentation(number)
+        val = int(bits[0])
+        # XOR the other bits in chain
+        for i in range(1, len(bits)):
+            val = val ^ int(bits[i])
+        return val
+
     def __setBit(self, byte, value, position):
         return clearBit(byte, position) if value == '0' else setBit(byte, position)
 
