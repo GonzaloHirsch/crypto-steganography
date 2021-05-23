@@ -159,14 +159,14 @@ class ShamirAlgorithm:
         x, w, v, u = [getBitsRepresentation(b) for b in block]
         t = 0
         # Setting T bits
-        t = self.__setbit(t, w[0], 2)
-        t = self.__setbit(t, w[1], 1)
-        t = self.__setbit(t, w[2], 0)
-        t = self.__setbit(t, v[0], 5)
-        t = self.__setbit(t, v[1], 4)
-        t = self.__setbit(t, v[2], 3)
-        t = self.__setbit(t, u[0], 7)
-        t = self.__setbit(t, u[1], 6)
+        t = self.__setBit(t, w[0], 2)
+        t = self.__setBit(t, w[1], 1)
+        t = self.__setBit(t, w[2], 0)
+        t = self.__setBit(t, v[0], 5)
+        t = self.__setBit(t, v[1], 4)
+        t = self.__setBit(t, v[2], 3)
+        t = self.__setBit(t, u[0], 7)
+        t = self.__setBit(t, u[1], 6)
 
         # Making the verification
         if int(u[2]) == self.__completeNumberXor(t):

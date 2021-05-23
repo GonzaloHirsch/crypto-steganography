@@ -9,10 +9,12 @@ Returns:
     - res --> Power calculated
 """
 def field_pow(num, n, field):
-    res = num
-    for _ in range(1, n):
-        res = field.Multiply(res, num)
-    return res
+    return num**n
+    # res = num
+    # for _ in range(1, n):
+    #     print(_)
+    #     res = field.Multiply(res, num)
+    # return res
 
 """
 Calculates a step of the interpolation
@@ -55,7 +57,7 @@ Receives:
 """
 def calculate_y_prime(x, y, s_1, k, field):
     # Perform calculations inline
-    y_prime = [field.Divide(field.Subtract(y[i] - s_1), x[i]) for i in range(k)]
+    y_prime = [field.Divide(field.Subtract(y[i], s_1), x[i]) for i in range(k)]
     return y_prime
 
 
@@ -72,7 +74,7 @@ def interpolate(x, y, field):
     # Calculate number of secrets
     k = len(x)
     # Generate array at the beginning
-    s = [] * k
+    s = [None] * k
     # Calculate initial value
     s[0] = calculate_step(x, y, 0, k, field)
     # Calculate Y'
