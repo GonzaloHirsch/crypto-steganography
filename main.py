@@ -23,28 +23,21 @@ def main():
     bmpStructure = BMPStructure(config.secret_image)
     print(bmpStructure)
 
-    # array = [
-    #     0, 1, 2, 3,
-    #     4, 5, 6, 7,
-    #     8, 9, 10, 11,
-    #     12, 13, 14, 15
-    # ]
-
     blockArray = Transformer.mapPixelArrayIntoBlocks(
         bmpStructure.getPixelArray(), 
         bmpStructure.getHeight(), 
         bmpStructure.getWidth()
     )
 
-    # shamir = ShamirAlgorithm(27, 5, 10, [])
-    # shamir.encode()
+    shamir = ShamirAlgorithm("AcD227", 3, 5, [[[0, 1, 4, 5], [2, 3, 6, 7]],[[8,9,12,13],[10,11,14,15]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]]])
+    shamir.encode()
 
     pixels = Transformer.mapBlocksIntoPixelArray(
         blockArray,
         bmpStructure.getHeight(), 
         bmpStructure.getWidth()
     )
-    
+
     # print(blockArray)
     # print(pixels)
 
