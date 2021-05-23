@@ -19,6 +19,7 @@ def parse_cli(validate = False):
     k = sys.argv[3]
     directory = sys.argv[4]
     # Validations
+    files_in_directory = len([name for name in os.listdir(directory) if os.path.isfile(directory + "/" + name)])
     if validate:
         if action != ENCODE and action != DECODE:
             print('Opción inválida \'{}\' para la acción, debe ser \'{}\' o \'{}\''.format(action, ENCODE, DECODE))
@@ -26,38 +27,41 @@ def parse_cli(validate = False):
         if k < 4 or k > 6:
             print('Opción inválida \'{}\' para K, debe ser 4 <= k <= 6'.format(k))
             exit(1)
-        files_in_directory = len([name for name in os.listdir(directory) if os.path.isfile(name)])
         if files_in_directory < k:
             print('Opción inválida \'{}\' para directorio, deben haber al menos {} archivos'.format(directory, k))
             exit(1)
-    return Config(action, secret_image, k, directory)
+    return Config(action, secret_image, k, files_in_directory, directory)
 
 def encode(config, galoisField):
     # Parsing the BMP image
     bmpStructure = BMPStructure(config.secret_image)
     print(bmpStructure)
 
-    blockArray = Transformer.mapPixelArrayIntoBlocks(
-        bmpStructure.getPixelArray(), 
-        bmpStructure.getHeight(), 
-        bmpStructure.getWidth()
-    )
-    # TODO
-    randomShadows = [[[0, 1, 4, 5], [2, 3, 6, 7]],[[8,9,12,13],[10,11,14,15]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]], [[0, 1, 4, 5], [2, 3, 6, 7]]]
+    portadoras = []
 
-    shamir = ShamirAlgorithm(ENCODE, galoisField, randomShadows, config.k, len(randomShadows), bmpStructure.getPixelArray())
+    for name in os.listdir(config.directory):
+        filepath = config.directory + "/" + name
+        if os.path.isfile(filepath) :
+            portadoraStructure = BMPStructure(filepath)
+            portadoras.append(Transformer.mapPixelArrayIntoBlocks(
+                portadoraStructure.getPixelArray(), 
+                portadoraStructure.getHeight(), 
+                portadoraStructure.getWidth()
+            ))
+
+    shamir = ShamirAlgorithm(ENCODE, galoisField, portadoras, config.k, config.n, bmpStructure.getPixelArray())
     shamir.encode()
 
-    pixels = Transformer.mapBlocksIntoPixelArray(
-        blockArray,
-        bmpStructure.getHeight(), 
-        bmpStructure.getWidth()
-    )
-
-    # print(blockArray)
-    # print(pixels)
-
-    bmpStructure.writeNewImage(pixels, config.directory, 'eggs.bmp')
+    for idx, name in enumerate(os.listdir(config.directory)):
+        filepath = config.directory + "/" + name
+        if os.path.isfile(filepath) :
+            shadows = shamir.shadows
+            shadow = Transformer.mapBlocksIntoPixelArray(
+                shadows[idx],
+                bmpStructure.getHeight(), 
+                bmpStructure.getWidth()
+            )
+            bmpStructure.writeNewImage(shadow, config.directory, "/" + name)
 
 def decode(config, galoisField):
     return

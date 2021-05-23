@@ -4,7 +4,7 @@ from interpolation import field_pow
 
 class ShamirAlgorithm:
     
-    def __init__(self, action, field, shadows, k, n=None, secret=None):
+    def __init__(self, action, field, shadows, k, n=None, secret=None, debug=False):
 
         self.action = action
         self.field = field
@@ -12,6 +12,7 @@ class ShamirAlgorithm:
         self.k = int(k)
         self.coeficients = []
         self.polinomialCount = 0
+        self.debug = debug
 
         if (action == constants.ENCODE):
             # Divide the secret into blocks of k bytes
@@ -38,7 +39,8 @@ class ShamirAlgorithm:
     def __encodeShadows(self):
         print(len(self.shadows), len(self.shadows[1]))
         for shadowIdx in range (0, self.n):
-            print('\n####### Shadow %i #######' % (shadowIdx))
+            if (self.debug) :
+                print('\n####### Shadow %i #######' % (shadowIdx))
 
             for blockIdx in range(0, self.polinomialCount):
                 # Get the imageIdx-th shadow, its "blockIdx" block, and the X pixel
@@ -46,8 +48,8 @@ class ShamirAlgorithm:
                 shadowX = shadowBlock[0]
                 # Evaluate the block with its corresponding polinomial
                 evaluationX = self.__evaluatePolinomial(blockIdx, shadowX)
-
-                print('[blockIdx=(%i)] [block=(%s)] [polinomial=(%s)] [eval=(%i) bin=(%s)]' % (blockIdx, shadowBlock, self.coeficients[blockIdx], evaluationX, getBitsRepresentation(evaluationX)))
+                if (self.debug) :
+                    print('[blockIdx=(%i)] [block=(%s)] [polinomial=(%s)] [eval=(%i) bin=(%s)]' % (blockIdx, shadowBlock, self.coeficients[blockIdx], evaluationX, getBitsRepresentation(evaluationX)))
 
                 # Return the new shadow block with the changes bits
                 shadowBlock = self.__encodePixelBlock(evaluationX, shadowBlock)
@@ -61,7 +63,8 @@ class ShamirAlgorithm:
         secretBlocks = [secret[i:i+self.k] for i in range(0, len(secret), self.k)]
 
         if (len(secretBlocks[-1]) != self.k):
-            print("[Warning] Secret is not divisible by k = ", self.k)
+            if (self.debug) :
+                print("[Warning] Secret is not divisible by k = ", self.k)
 
         return secretBlocks
 
@@ -109,8 +112,9 @@ class ShamirAlgorithm:
         U = self.__setBit(U, parity, 2)
         U = self.__setBit(U, bits[6], 1)
         U = self.__setBit(U, bits[7], 0)
-
-        print('[W=(%i) bin=(%s) newW=(%i) encoded=(%s)]\n[V=(%i) bin=(%s) newV=(%i) encoded=(%s)]\n[U=(%i) bin=(%s) newU=(%i) encoded=(%s)]\n' % (block[1], getBitsRepresentation(block[1]), W, getBitsRepresentation(W), block[2], getBitsRepresentation(block[2]), V, getBitsRepresentation(V), block[3], getBitsRepresentation(block[3]), U, getBitsRepresentation(U)))
+        
+        if (self.debug) :
+            print('[W=(%i) bin=(%s) newW=(%i) encoded=(%s)]\n[V=(%i) bin=(%s) newV=(%i) encoded=(%s)]\n[U=(%i) bin=(%s) newU=(%i) encoded=(%s)]\n' % (block[1], getBitsRepresentation(block[1]), W, getBitsRepresentation(W), block[2], getBitsRepresentation(block[2]), V, getBitsRepresentation(V), block[3], getBitsRepresentation(block[3]), U, getBitsRepresentation(U)))
 
         block[1] = W
         block[2] = V
