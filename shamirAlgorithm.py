@@ -21,7 +21,6 @@ class ShamirAlgorithm:
             # How many polinomials there are
             # Equivalent to how many blocks we will use of each shadow
             self.polinomialCount = len(self.secret)
-            print(self.polinomialCount)
 
             # Extra validation
             if (self.k > self.n or len(shadows) != n):
@@ -40,7 +39,6 @@ class ShamirAlgorithm:
         self.__verifyAndExtract()
     
     def __encodeShadows(self):
-        print(len(self.shadows), len(self.shadows[1]))
         for shadowIdx in range (0, self.n):
             if (self.debug) :
                 print('\n####### Shadow %i #######' % (shadowIdx))
@@ -143,6 +141,7 @@ class ShamirAlgorithm:
             for block in j_block:
                 # If verified add the X and Y to the arrays
                 valid, x, y = self.__verifyBlock(block)
+                print(valid, x, y, block)
                 if valid:
                     xs.append(x)
                     ys.append(y)
@@ -167,6 +166,10 @@ class ShamirAlgorithm:
         t = self.__setBit(t, v[2], 3)
         t = self.__setBit(t, u[0], 7)
         t = self.__setBit(t, u[1], 6)
+        print('w', w[::-1])
+        print('v', v[::-1])
+        print('u', u[::-1])
+        print('t', getBitsRepresentation(t)[::-1])
 
         # Making the verification
         if int(u[2]) == self.__completeNumberXor(t):

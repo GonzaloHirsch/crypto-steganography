@@ -9,12 +9,13 @@ Returns:
     - res --> Power calculated
 """
 def field_pow(num, n, field):
-    return num**n
-    # res = num
-    # for _ in range(1, n):
-    #     print(_)
-    #     res = field.Multiply(res, num)
-    # return res
+    # return num**n
+    if n == 0:
+        return 1
+    res = num
+    for _ in range(1, n):
+        res = field.Multiply(res, num)
+    return res
 
 """
 Calculates a step of the interpolation
@@ -29,7 +30,7 @@ Returns:
 """
 def calculate_step(x, y_prime, r, k, field):
     # Multiplier
-    mult = field_pow(-1, k - (r + 1), field)
+    mult = field_pow(field.Subtract(0,1), k - (r + 1), field)
     # Result
     res = 0
     # Iteration for summation
@@ -41,7 +42,7 @@ def calculate_step(x, y_prime, r, k, field):
             if q != i:
                 temp = field.Multiply(temp, field.Divide(x[q], field.Subtract(x[i], x[q])))
         # Perform summation
-        field.Add(res, field.Multiply(y_prime[i], temp))
+        res = field.Add(res, field.Multiply(y_prime[i], temp))
     # Perform final multiplication
     res = field.Multiply(mult, res)
     return res
@@ -55,9 +56,9 @@ Receives:
     - s_1 --> First calculated secret
     - field --> Galois field instance
 """
-def calculate_y_prime(x, y, s_1, k, field):
+def calculate_y_prime(x, y, s, k, field):
     # Perform calculations inline
-    y_prime = [field.Divide(field.Subtract(y[i], s_1), x[i]) for i in range(k)]
+    y_prime = [field.Divide(field.Subtract(y[i], s), x[i]) for i in range(k)]
     return y_prime
 
 
@@ -77,10 +78,10 @@ def interpolate(x, y, field):
     s = [None] * k
     # Calculate initial value
     s[0] = calculate_step(x, y, 0, k, field)
-    # Calculate Y'
-    y_prime = calculate_y_prime(x, y, s[0], k, field)
     # Iterate for next steps
     for r in range(1, k):
-        s[r] = calculate_step(x, y_prime, r, k, field)
+        # Calculate Y'
+        y = calculate_y_prime(x, y, s[r - 1], k, field)
+        s[r] = calculate_step(x, y, r, k, field)
     return s
 
