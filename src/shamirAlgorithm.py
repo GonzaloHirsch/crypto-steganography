@@ -24,7 +24,7 @@ class ShamirAlgorithm:
 
             # Extra validation
             if (self.k > self.n or len(shadows) != n):
-                print("Incorrect parameters. The following must be satisfied:\n  - n = k\n  - len(shadow) = n")
+                print("Incorrect parameters. The following must be satisfied:\n  - n > k\n  - len(shadow) = n")
                 exit(1)
             # In case the secret is longer than the amount of blocks in the shadows
             if (len(self.shadows[0]) < self.polinomialCount):
@@ -39,14 +39,33 @@ class ShamirAlgorithm:
         self.__verifyAndExtract()
     
     def __encodeShadows(self):
+        mem = {}
         for shadowIdx in range (0, self.n):
             if (self.debug) :
                 print('\n####### Shadow %i #######' % (shadowIdx))
 
             for blockIdx in range(0, self.polinomialCount):
+                if not blockIdx in mem:
+                    mem[blockIdx] = {}
                 # Get the imageIdx-th shadow, its "blockIdx" block, and the X pixel
                 shadowBlock = self.shadows[shadowIdx][blockIdx]
+                # Get the X shadow
                 shadowX = shadowBlock[0]
+                # Iterate adding 1 until 255 is reached
+                # If even 255 is taken, go back to the starting point and remove 1 until
+                # An unused X is reached
+                # If X = 0, also add 1 to avoid interpolation errors in the future
+                dir = 1
+                while shadowX in mem[blockIdx] or shadowX <= 0:
+                    # Change direction if X is 255
+                    if shadowX == 255:
+                        dir = -1
+                        shadowX = shadowBlock[0]
+                    shadowX += dir
+                # Store the used X for that block
+                mem[blockIdx][shadowX] = 0
+                # Replace the old X with the new one
+                shadowBlock[0] = shadowX
                 # Evaluate the block with its corresponding polinomial
                 evaluationX = self.__evaluatePolinomial(blockIdx, shadowX)
                 if (self.debug) :
@@ -78,7 +97,7 @@ class ShamirAlgorithm:
         # For each block, create the polinomial coeficients 
         for secretBlock in self.secret:
             coeficients.append([secretBlock[i] for i in range(0, self.k)])
-
+        
         self.coeficients = coeficients
 
 
@@ -141,7 +160,7 @@ class ShamirAlgorithm:
             for block in j_block:
                 # If verified add the X and Y to the arrays
                 valid, x, y = self.__verifyBlock(block)
-                print(valid, x, y, block)
+                # print(valid, x, y, block)
                 if valid:
                     xs.append(x)
                     ys.append(y)
@@ -158,21 +177,22 @@ class ShamirAlgorithm:
         x, w, v, u = [getBitsRepresentation(b) for b in block]
         t = 0
         # Setting T bits
-        t = self.__setBit(t, w[0], 2)
-        t = self.__setBit(t, w[1], 1)
-        t = self.__setBit(t, w[2], 0)
-        t = self.__setBit(t, v[0], 5)
-        t = self.__setBit(t, v[1], 4)
-        t = self.__setBit(t, v[2], 3)
-        t = self.__setBit(t, u[0], 7)
-        t = self.__setBit(t, u[1], 6)
-        print('w', w[::-1])
-        print('v', v[::-1])
-        print('u', u[::-1])
-        print('t', getBitsRepresentation(t)[::-1])
+        t = self.__setBit(t, w[7], 5)
+        t = self.__setBit(t, w[6], 6)
+        t = self.__setBit(t, w[5], 7)
+        t = self.__setBit(t, v[7], 2)
+        t = self.__setBit(t, v[6], 3)
+        t = self.__setBit(t, v[5], 4)
+        t = self.__setBit(t, u[7], 0)
+        t = self.__setBit(t, u[6], 1)
+        # print('w', w)
+        # print('v', v)
+        # print('u', u)
+        # print('t', getBitsRepresentation(t))
+        # print('1', getBitsRepresentation(1))
 
         # Making the verification
-        if int(u[2]) == self.__completeNumberXor(t):
+        if int(u[5]) == self.__completeNumberXor(t):
             return True, block[0], t
         return False, None, None
 

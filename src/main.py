@@ -53,7 +53,7 @@ def encode(config, galoisField):
     bmpStructure = BMPStructure(config.secret_image)
 
     portadoras = get_images_from_directory(config)
-    
+
     shamir = ShamirAlgorithm(ENCODE, galoisField, portadoras, config.k, config.n, bmpStructure.getPixelArray())
     shamir.encode()
 
@@ -71,12 +71,10 @@ def encode(config, galoisField):
 def decode(config, galoisField):
     # Extract shadowed images
     portadoras = get_images_from_directory(config)
-    
+
     # Decode using the Shamir Algorithm
     shamir = ShamirAlgorithm(DECODE, galoisField, portadoras, config.k)
     shamir.decode()
-
-    print('SECRET', shamir.secret)
 
     # Find an image to use
     resultStructure = None
