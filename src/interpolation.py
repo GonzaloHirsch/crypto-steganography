@@ -56,10 +56,34 @@ Receives:
     - s_1 --> First calculated secret
     - field --> Galois field instance
 """
-def calculate_y_prime(x, y, s, k, field):
-    # Perform calculations inline
-    y_prime = [field.Divide(field.Subtract(y[i], s), x[i]) for i in range(k)]
-    return y_prime
+def calculate_y_prime(x, y, s, limit, field):
+    for i in range(limit):
+        y[i] = field.Divide(field.Subtract(y[i], s), x[i])
+    return y
+
+
+"""
+Reorders the points to leave the point with x = 0 at the end of the array
+Receives:
+    - x --> Pixel X from block j for each image
+    - y --> Representation of Tij
+Returns:
+    - x, y --> Altered arrays
+"""
+def reorder_points(x, y):
+    # Check if there is a 0 in the X array
+    has_0, index_0 = False, 0
+    for i in range(len(x)):
+        if x[i] == 0:
+            has_0, index_0 = True, i
+            break
+    # If a 0 is found, swap it with the last one
+    # If the 0 is last, leave it there
+    if has_0 and index_0 < len(x) - 1:
+        # Swap items in X and Y to make it work
+        x[index_0], x[len(x) - 1] = x[len(x) - 1], x[index_0]
+        y[index_0], y[len(x) - 1] = y[len(x) - 1], y[index_0]
+    return x, y
 
 
 """
@@ -72,6 +96,8 @@ Returns:
     - s --> Array of secrets
 """
 def interpolate(x, y, field):
+    # Rearrange values if necesary
+    x, y = reorder_points(x, y)
     # Calculate number of secrets
     k = len(x)
     # Generate array at the beginning
@@ -81,7 +107,7 @@ def interpolate(x, y, field):
     # Iterate for next steps
     for r in range(1, k):
         # Calculate Y'
-        y = calculate_y_prime(x, y, s[r - 1], k, field)
+        y = calculate_y_prime(x, y, s[r - 1], k - r, field)
         s[r] = calculate_step(x, y, r, k, field)
     return s
 

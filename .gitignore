@@ -136,3 +136,5 @@ images/
 images_bk/
 
 tmp/
+
+.DS_Store

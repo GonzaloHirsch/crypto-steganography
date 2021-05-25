@@ -37,8 +37,8 @@ def get_images_from_directory(config):
     portadoras = []
 
     for name in os.listdir(config.directory):
-        filepath = config.directory + "/" + name
-        if os.path.isfile(filepath) :
+        filepath = os.path.join(config.directory, name)
+        if os.path.isfile(filepath):
             portadoraStructure = BMPStructure(filepath)
             portadoras.append(Transformer.mapPixelArrayIntoBlocks(
                 portadoraStructure.getPixelArray(), 
