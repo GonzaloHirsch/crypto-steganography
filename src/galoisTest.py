@@ -2,7 +2,7 @@ from pyfinite import ffield
 # 355 is the given polynomial generator
 # Lib link https://github.com/emin63/pyfinite
 # Set useLUT to 0 because if not the operations give wrong values
-F = ffield.FField(8, gen=355, useLUT=0)
+F = ffield.FField(8, gen=355, useLUT=1)
 print('The generator is', F.generator)
 print('The polynomial is', F.ShowPolynomial(F.generator))
 print('Sum and multiplication test')
@@ -12,6 +12,7 @@ print('The polynomial for a =', a, 'is', F.ShowPolynomial(a))
 print('The polynomial for b =', b, 'is', F.ShowPolynomial(b))
 print(a, '+', b, '=', F.Add(a,b))
 print(a, 'x', b, '=', F.Multiply(a,b))
+print(a, 'x', b, '=', F.Divide(0,b))
 c = F.Multiply(a,b)
 print('The polynomial for c =', c, 'is', F.ShowPolynomial(c))
 print("Inverse Test")

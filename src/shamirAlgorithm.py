@@ -4,7 +4,7 @@ from interpolation import field_pow, interpolate
 
 class ShamirAlgorithm:
     
-    def __init__(self, action, field, shadows, k, n=None, secret=None, debug=False):
+    def __init__(self, action, field, shadows, k, n=None, secret=None, debug=False, width=None, height=None):
 
         self.action = action
         self.field = field
@@ -24,12 +24,16 @@ class ShamirAlgorithm:
 
             # Extra validation
             if (self.k > self.n or len(shadows) != n):
-                print("Incorrect parameters. The following must be satisfied:\n  - n > k\n  - len(shadow) = n")
+                print("[Error] Incorrect parameters. The following must be satisfied:\n  - n > k\n  - len(shadow) = n")
                 exit(1)
             # In case the secret is longer than the amount of blocks in the shadows
             if (len(self.shadows[0]) < self.polinomialCount):
-                print("Secret is too long. Shadows contain {} blocks but secret has {} blocks.".format(len(self.shadows[0]), self.polinomialCount))
+                print("[Error] Secret is too long. Shadows contain {} blocks but secret has {} blocks.".format(len(self.shadows[0]), self.polinomialCount))
                 exit(1)
+        elif (action == constants.DECODE):
+            # Keep only K of the shadows
+            self.shadows = self.shadows[:self.k]
+            self.width, self.height = width, height
 
     def encode(self):
         self.__createPolinomials()
@@ -147,6 +151,11 @@ class ShamirAlgorithm:
         # [[1_block_img_1, 1_block_img_2, ...], [2_block_img_1, 2_block_img_2, ...]]
         j_blocks = []
 
+        ## QUEDARME CON LOS PRIMEROS WxH / K bloques
+        # Keep only the first width * height
+        used_blocks = int((self.width * self.height)/self.k)
+        self.shadows = [shadow[:used_blocks] for shadow in self.shadows]
+
         # Extract the J block for each shadow
         # J is the number of blocks per shadow
         for j in range(len(self.shadows[0])):
@@ -160,10 +169,12 @@ class ShamirAlgorithm:
             for block in j_block:
                 # If verified add the X and Y to the arrays
                 valid, x, y = self.__verifyBlock(block)
-                # print(valid, x, y, block)
                 if valid:
                     xs.append(x)
                     ys.append(y)
+                else:
+                    print("[Error] Un bloque de una imagen no pasa la verificación de paridad")
+                    exit(1)
             if len(xs) > 0:
                 verified_j_blocks.append([xs, ys])
 
@@ -185,11 +196,6 @@ class ShamirAlgorithm:
         t = self.__setBit(t, v[5], 4)
         t = self.__setBit(t, u[7], 0)
         t = self.__setBit(t, u[6], 1)
-        # print('w', w)
-        # print('v', v)
-        # print('u', u)
-        # print('t', getBitsRepresentation(t))
-        # print('1', getBitsRepresentation(1))
 
         # Making the verification
         if int(u[5]) == self.__completeNumberXor(t):

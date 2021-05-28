@@ -40,7 +40,11 @@ def calculate_step(x, y_prime, r, k, field):
         for q in range(k - r):
             # Perform multiplication operation
             if q != i:
-                temp = field.Multiply(temp, field.Divide(x[q], field.Subtract(x[i], x[q])))
+                # Fix because pyfinite when doing 0 / X gives an error
+                if x[q] > 0:
+                    temp = field.Multiply(temp, field.Divide(x[q], field.Subtract(x[i], x[q])))
+                else:
+                    temp = field.Multiply(temp, 0)
         # Perform summation
         res = field.Add(res, field.Multiply(y_prime[i], temp))
     # Perform final multiplication
@@ -58,7 +62,12 @@ Receives:
 """
 def calculate_y_prime(x, y, s, limit, field):
     for i in range(limit):
-        y[i] = field.Divide(field.Subtract(y[i], s), x[i])
+        tmp = field.Subtract(y[i], s)
+        # Fix because when using the LUT, the division gives NaN when being 0 / X
+        if tmp > 0:
+            y[i] = field.Divide(tmp, x[i])
+        else:
+            y[i] = 0
     return y
 
 

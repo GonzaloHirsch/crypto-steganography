@@ -138,3 +138,7 @@ images_bk/
 tmp/
 
 .DS_Store
+
+*.bmp
+
+ffield.lut.8
