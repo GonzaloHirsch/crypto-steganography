@@ -1,4 +1,4 @@
-# Trabajo Práctico de Criptografía y Seguridad
+# Trabajo Práctico de Criptografía y Seguridad (GRUPO 5)
 
 El objetivo de este trabajo era poder realizar una implementación de Secreto Compartido en base al paper "Sistema de Imagen Secreta Compartida con Optimización de la Carga Útil" de Angelina Espejel-Trujillo, Iván Castillo-Camacho, Mariko Nakano-Miyatake, Héctor Pérez-Meana.
 
